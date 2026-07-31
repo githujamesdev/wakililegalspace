@@ -1,0 +1,266 @@
+================================================================================
+WAKILI LEGAL WORKSPACE - WINDOWS SETUP (Step-by-Step)
+================================================================================
+
+COMPLETE SETUP IN 15 MINUTES
+
+================================================================================
+STEP 1: INSTALL PREREQUISITES (5 minutes)
+================================================================================
+
+1. INSTALL NODE.JS
+   - Go to: https://nodejs.org/
+   - Download LTS version (v18 or higher)
+   - Run installer (accept all defaults)
+   - Restart your computer
+
+2. VERIFY INSTALLATION
+   - Open PowerShell (search "PowerShell" in Start menu)
+   - Run: node --version
+   - Run: npm --version
+   - You should see version numbers
+
+3. INSTALL PNPM
+   - In PowerShell, run:
+     npm install -g pnpm
+   - Verify: pnpm --version
+
+4. INSTALL POSTGRESQL
+   - Go to: https://www.postgresql.org/download/windows/
+   - Download installer
+   - Run installer
+   - IMPORTANT: Remember the password you set for "postgres" user
+   - Check "pgAdmin 4" during installation
+   - Let it install as Windows service
+
+================================================================================
+STEP 2: CREATE DATABASE (3 minutes)
+================================================================================
+
+1. Open PowerShell as ADMINISTRATOR (right-click, Run as Administrator)
+
+2. Connect to PostgreSQL:
+   psql -U postgres
+
+3. When asked for password, enter the password from Step 1
+
+4. Create database (copy and paste):
+   CREATE DATABASE wakili_db;
+
+5. Exit (type and press Enter):
+   \q
+
+================================================================================
+STEP 3: EXTRACT AND SETUP PROJECT (3 minutes)
+================================================================================
+
+1. Extract the wakili-workspace ZIP file to your desired location
+   (e.g., C:\Users\YourName\Documents\wakili-workspace)
+
+2. Open PowerShell (normal, not admin)
+
+3. Navigate to project folder:
+   cd C:\Users\YourName\Documents\wakili-workspace
+   
+   (Replace path with your actual location)
+
+4. Install dependencies:
+   pnpm install
+   
+   (This takes 2-3 minutes, you'll see lots of output)
+
+================================================================================
+STEP 4: CREATE ENVIRONMENT FILE (2 minutes)
+================================================================================
+
+1. In the project folder, create a file named: .env.local
+
+2. Open it with Notepad (right-click > Open with > Notepad)
+
+3. Copy and paste this (replace "your_password" with your postgres password):
+
+---BEGIN COPY---
+DATABASE_URL=postgresql://postgres:your_password@localhost:5432/wakili_db
+BETTER_AUTH_SECRET=temp_secret_123456
+NODE_ENV=development
+---END COPY---
+
+4. Save and close
+
+5. Now generate a proper secret:
+   - Open PowerShell
+   - Copy and paste this entire command:
+     
+     [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+   
+   - Press Enter
+   - You'll get a long random string
+   - Copy it
+
+6. Open .env.local again with Notepad
+
+7. Replace "temp_secret_123456" with the string you copied
+
+8. Save and close
+
+================================================================================
+STEP 5: CREATE DATABASE TABLES (2 minutes)
+================================================================================
+
+1. Open PowerShell
+
+2. Connect to database:
+   psql -U postgres -d wakili_db
+
+3. In pgAdmin or psql, run ALL the SQL from: SETUP_WINDOWS.md
+
+   (It's a long script with table definitions)
+
+4. After pasting all SQL, type:
+   \q
+
+================================================================================
+STEP 6: SEED DATABASE WITH ROLES (1 minute)
+================================================================================
+
+1. In PowerShell, in project folder:
+   pnpm seed
+
+2. You should see output like:
+   [v0] Starting database seed...
+   [v0] Inserting modules...
+   [v0] Admin user created: admin@wakili.local / Admin123!
+   [v0] Database seed completed successfully!
+
+================================================================================
+STEP 7: START APPLICATION (1 minute)
+================================================================================
+
+1. In PowerShell, in project folder:
+   pnpm dev
+
+2. Wait for output:
+   ▲ Next.js 16.0.0
+   - Local:        http://localhost:3000
+
+3. Open browser and go to: http://localhost:3000
+
+================================================================================
+STEP 8: LOGIN AND TEST
+================================================================================
+
+1. Click "Sign In" button (or go to http://localhost:3000/auth/sign-in)
+
+2. Enter credentials:
+   Email: admin@wakili.local
+   Password: Admin123!
+
+3. Click "Sign In"
+
+4. You should see the dashboard!
+
+5. To explore, go to: /org/demo-firm
+
+================================================================================
+SUCCESS! YOUR APPLICATION IS RUNNING
+================================================================================
+
+NEXT STEPS:
+
+1. Create new users:
+   - Click Admin > Users
+   - Click "New User"
+   - Enter details and select role
+   - Share temporary password with user
+
+2. Explore modules:
+   - Dashboard: Overview
+   - Cases: Case management
+   - Clients: Client database
+   - Documents: File uploads
+   - Messaging: Team chat
+   - Calendar: Scheduling
+   - Tasks: Task management
+   - Time Tracking: Billable hours
+
+3. Available roles:
+   - Admin: Full access
+   - Manager: Most features except settings
+   - Attorney: Cases, documents, time tracking
+   - Paralegal: Limited support role
+   - Support: Client-facing only
+
+================================================================================
+COMMON ISSUES & SOLUTIONS
+================================================================================
+
+ISSUE: "psql command not found"
+SOLUTION: 
+- PostgreSQL not installed or not in PATH
+- Restart PowerShell after installing PostgreSQL
+- Or use pgAdmin GUI instead
+
+ISSUE: "Port 3000 already in use"
+SOLUTION:
+- Run with different port: pnpm dev -- -p 3001
+- Then open: http://localhost:3001
+
+ISSUE: "Cannot find module"
+SOLUTION:
+- Run: pnpm install
+- Make sure you're in project folder
+
+ISSUE: "Database connection refused"
+SOLUTION:
+- Check PostgreSQL is running (Services > PostgreSQL)
+- Verify DATABASE_URL in .env.local
+- Check password is correct
+
+ISSUE: "Permission denied"
+SOLUTION:
+- Run PowerShell as Administrator (right-click > Run as Administrator)
+
+ISSUE: "Invalid login credentials"
+SOLUTION:
+- Copy exactly: admin@wakili.local / Admin123!
+- Make sure seed ran successfully
+
+================================================================================
+IMPORTANT PASSWORDS & CREDENTIALS
+================================================================================
+
+PostgreSQL System:
+- Username: postgres
+- Password: (what you set during PostgreSQL install)
+
+Wakili Admin Account:
+- Email: admin@wakili.local
+- Password: Admin123! (change this on first login!)
+
+================================================================================
+KEEP THIS FOR REFERENCE
+================================================================================
+
+Project folder: C:\Users\YourName\Documents\wakili-workspace (your path)
+Database: wakili_db
+Database user: postgres
+App URL: http://localhost:3000
+
+To STOP the application: Press CTRL+C in PowerShell
+
+To RESTART the application:
+1. Press CTRL+C to stop
+2. Run: pnpm dev
+
+================================================================================
+FOR DETAILED INFORMATION
+================================================================================
+
+See these files in project folder:
+- SETUP_WINDOWS.md: Complete detailed setup guide
+- QUICK_START.md: Quick reference
+- RBAC_IMPLEMENTATION.md: Authentication system details
+
+================================================================================
+YOU'RE ALL SET! ENJOY USING WAKILI!
+================================================================================

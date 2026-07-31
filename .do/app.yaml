@@ -1,0 +1,29 @@
+
+name: legal-workspace
+services:
+- name: web
+  github:
+    branch: main
+    repo: githujamesdev/wakililegalspace
+  build_command: npm run build
+  run_command: npm start
+  http_port: 3000
+  envs:
+  - key: NODE_ENV
+    value: production
+    scope: RUN_AND_BUILD_TIME
+  - key: NEXT_PUBLIC_APP_URL
+    value: ${APP_DOMAIN}
+    scope: RUN_AND_BUILD_TIME
+  - key: BETTER_AUTH_URL
+    value: https://${APP_DOMAIN}
+    scope: RUN_AND_BUILD_TIME
+  - key: NEXT_PUBLIC_BETTER_AUTH_URL
+    value: https://${APP_DOMAIN}
+    scope: RUN_AND_BUILD_TIME
+  - key: DATABASE_URL
+    value: ${DATABASE_URL}
+    scope: RUN_AND_BUILD_TIME
+  - key: BETTER_AUTH_SECRET
+    value: ${BETTER_AUTH_SECRET}
+    scope: RUN_AND_BUILD_TIME
