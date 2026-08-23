@@ -69,8 +69,8 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-full bg-muted/40 p-4 sm:p-6 lg:p-8">
+      <div className="mb-5 flex items-center justify-between border-b bg-card px-5 py-4 shadow-sm">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Calendar</h1>
           <p className="text-muted-foreground mt-2">
@@ -98,7 +98,7 @@ export default function CalendarPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="eventType">Event Type</Label>
-                <select className="w-full px-3 py-2 border border-border rounded-md">
+                <select className="h-10 w-full rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <option>Court Date</option>
                   <option>Deadline</option>
                   <option>Meeting</option>

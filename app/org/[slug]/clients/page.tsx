@@ -208,7 +208,7 @@ export default function ClientsPage() {
 
   if (loading) {
     return (
-      <div className="p-8 space-y-8">
+      <div className="min-h-full bg-muted/40 p-4 sm:p-6 lg:p-8">
         <div className="h-12 bg-slate-200 rounded animate-pulse" />
         <div className="grid grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
@@ -220,18 +220,18 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="min-h-full bg-muted/40 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
             Clients
           </h1>
           <p className="text-slate-600 mt-2">Manage your client relationships and matters</p>
         </div>
         <Button
           onClick={() => setShowNewClientDialog(true)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-lg"
+          className="gap-2 shadow-sm"
         >
           <Plus className="w-4 h-4" />
           New Client
@@ -291,9 +291,11 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      {/* Clients List */}
-      <div className="space-y-3">
-        {filteredClients.length > 0 ? (
+  {/* Clients List */}
+  <div className="overflow-hidden rounded border border-border bg-card shadow-sm">
+  <div className="hidden grid-cols-[minmax(180px,1.3fr)_minmax(220px,1.4fr)_minmax(120px,0.8fr)_100px_140px_44px] gap-4 border-b bg-muted/50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground md:grid"><span>Client</span><span>Contact</span><span>Location</span><span>Matters</span><span>Outstanding</span><span /></div>
+  <div className="divide-y">
+  {filteredClients.length > 0 ? (
           filteredClients.map((c) => (
             <ClientListRow
               key={c.id}
@@ -310,6 +312,7 @@ export default function ClientsPage() {
             </p>
           </div>
         )}
+      </div>
       </div>
 
       {/* New Client Dialog */}
@@ -338,7 +341,7 @@ export default function ClientsPage() {
                       placeholder="John Doe"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -357,7 +360,7 @@ export default function ClientsPage() {
                       placeholder="john@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -367,7 +370,7 @@ export default function ClientsPage() {
                       placeholder="+254 712 345 678"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -375,7 +378,7 @@ export default function ClientsPage() {
                     <Input 
                       id="nationalId" 
                       placeholder="ID number" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -383,7 +386,7 @@ export default function ClientsPage() {
                     <Input 
                       id="passport" 
                       placeholder="Passport number" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -391,7 +394,7 @@ export default function ClientsPage() {
                     <Input 
                       id="occupation" 
                       placeholder="Job title" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -418,23 +421,23 @@ export default function ClientsPage() {
                     />
                     <Input 
                       placeholder="Postal Address" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     <Input
                       placeholder="City"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     <Input
                       placeholder="Country"
                       value={formData.country}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     <Input 
                       placeholder="Postal Code" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                 </div>
@@ -449,7 +452,7 @@ export default function ClientsPage() {
                       placeholder="ABC Corporation"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -457,7 +460,7 @@ export default function ClientsPage() {
                     <Input 
                       id="industry" 
                       placeholder="e.g., Technology" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -465,7 +468,7 @@ export default function ClientsPage() {
                     <Input 
                       id="registrationNumber" 
                       placeholder="Company registration #" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -473,7 +476,7 @@ export default function ClientsPage() {
                     <Input 
                       id="kraPin" 
                       placeholder="Tax ID" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -481,7 +484,7 @@ export default function ClientsPage() {
                     <Input 
                       id="contactPerson" 
                       placeholder="Name" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -492,7 +495,7 @@ export default function ClientsPage() {
                       placeholder="info@company.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -502,7 +505,7 @@ export default function ClientsPage() {
                       placeholder="+254 712 345 678"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                 </div>
@@ -516,23 +519,23 @@ export default function ClientsPage() {
                     />
                     <Input 
                       placeholder="Postal Address" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     <Input
                       placeholder="City"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     <Input
                       placeholder="Country"
                       value={formData.country}
                       onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     <Input 
                       placeholder="Postal Code" 
-                      className="border-2 border-slate-300 rounded-md px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" 
+                      className="h-10 rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                 </div>
@@ -713,118 +716,16 @@ function ClientListRow({ client, onEdit, onDelete }: any) {
 
   return (
     <>
-      <div className="border border-slate-200 rounded-lg hover:shadow-md transition-shadow group bg-white p-4">
-        <div className="flex items-center justify-between">
-          {/* Left: Name and Type */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3">
-              <div>
-                <h3 className="font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                  {client.name}
-                </h3>
-                <div className="flex gap-2 mt-1">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${getStatusColor(client.status)}`}>
-                    {client.status}
-                  </span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${getClientTypeColor(client.clientType)}`}>
-                    {client.clientType === 'individual' ? 'Individual' : 'Corporate'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Middle: Contact Info */}
-          <div className="flex-1 min-w-0 px-6">
-            <div className="space-y-1">
-              {client.email && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <span className="truncate">{client.email}</span>
-                </div>
-              )}
-              {client.phone && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <span className="truncate">{client.phone}</span>
-                </div>
-              )}
-              {client.city && (
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <span className="truncate">{client.city}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right: Stats */}
-          <div className="flex items-center gap-8 flex-shrink-0">
-            <div className="text-right">
-              <p className="text-xs text-slate-500 font-medium">Matters</p>
-              <p className="text-lg font-bold text-slate-900">{client.matterCount || 0}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-slate-500 font-medium">Outstanding</p>
-              <p className="text-lg font-bold text-red-600">{formatCurrency(client.outstandingBalance || 0)}</p>
-            </div>
-
-            {/* Actions Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => onEdit(client)}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit Client
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="text-red-600"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Client
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+      <div className="grid gap-3 bg-card px-5 py-4 transition-colors hover:bg-muted/30 md:grid-cols-[minmax(180px,1.3fr)_minmax(220px,1.4fr)_minmax(120px,0.8fr)_100px_140px_44px] md:items-center md:gap-4">
+        <div className="min-w-0"><p className="truncate font-semibold text-foreground">{client.name}</p><div className="mt-1 flex gap-2"><span className={`rounded px-2 py-0.5 text-xs font-medium ${getStatusColor(client.status)}`}>{client.status}</span><span className={`rounded px-2 py-0.5 text-xs font-medium ${getClientTypeColor(client.clientType)}`}>{client.clientType === 'individual' ? 'Individual' : 'Corporate'}</span></div></div>
+        <div className="min-w-0 text-sm text-muted-foreground"><p className="truncate">{client.email || '—'}</p><p className="truncate text-xs">{client.phone || 'No phone number'}</p></div>
+        <div className="text-sm text-muted-foreground">{client.city || '—'}</div>
+        <div><span className="mr-2 text-xs uppercase text-muted-foreground md:hidden">Matters:</span><span className="font-semibold">{client.matterCount || 0}</span></div>
+        <div className="font-semibold text-red-600">{formatCurrency(client.outstandingBalance || 0)}</div>
+        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreVertical /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => onEdit(client)}><Edit data-icon="inline-start" /> Edit Client</DropdownMenuItem><DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} className="text-red-600"><Trash2 data-icon="inline-start" /> Delete Client</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
       </div>
-
-      {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
-        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Client</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete <span className="font-semibold">{client.name}</span>? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteClick}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}><DialogContent><DialogHeader><DialogTitle>Delete Client</DialogTitle><DialogDescription>Are you sure you want to delete <span className="font-semibold">{client.name}</span>? This action cannot be undone.</DialogDescription></DialogHeader><div className="flex justify-end gap-3"><Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button><Button variant="destructive" onClick={handleDeleteClick} disabled={isDeleting}>{isDeleting ? 'Deleting...' : 'Delete'}</Button></div></DialogContent></Dialog>
       )}
     </>
   )

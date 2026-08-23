@@ -175,6 +175,7 @@ export const case_ = pgTable('case', {
   description: text('description'),
   caseNumber: text('caseNumber'),
   caseType: varchar('caseType', { length: 50 }).notNull(), // litigation, corporate, property, etc
+  agreedFee: integer('agreedFee').default(0).notNull(), // in cents
   status: varchar('status', { length: 20 }).default('open').notNull(), // open, closed, on-hold
   priority: varchar('priority', { length: 10 }).default('medium').notNull(), // low, medium, high
   courtName: text('courtName'),

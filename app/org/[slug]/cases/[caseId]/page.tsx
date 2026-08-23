@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { getMatterWithDetails } from '@/app/actions/matters'
+import { FinancialsCard } from '@/components/matters/FinancialsCard'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -13,7 +14,6 @@ import {
   Download,
   FileText,
   Plus,
-  DollarSign,
   User,
   AlertCircle,
   Loader,
@@ -230,42 +230,7 @@ export default function CaseDetailPage() {
             </Card>
           )}
 
-          {/* Financial Summary */}
-          <Card className="p-4 border-slate-200">
-            <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-emerald-600" />
-              Financials
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Total Invoiced</span>
-                <span className="font-medium text-slate-900">
-                  {formatCurrency(matter.financials?.totalInvoiced || 0)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Total Paid</span>
-                <span className="font-medium text-emerald-600">
-                  {formatCurrency(matter.financials?.totalPaid || 0)}
-                </span>
-              </div>
-              <div className="border-t border-slate-200 pt-2 flex justify-between text-sm">
-                <span className="text-slate-600 font-medium">Balance Due</span>
-                <span
-                  className={`font-semibold ${
-                    (matter.financials?.balance || 0) > 0
-                      ? 'text-red-600'
-                      : 'text-emerald-600'
-                  }`}
-                >
-                  {formatCurrency(matter.financials?.balance || 0)}
-                </span>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" className="w-full mt-4">
-              View Invoices
-            </Button>
-          </Card>
+          <FinancialsCard matter={matter} slug={slug} />
 
           {/* Opponent Info */}
           {matter.opponent && (

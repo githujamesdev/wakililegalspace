@@ -75,8 +75,8 @@ export default function TasksPage() {
   const completedTasks = tasks.filter((t) => t.status === 'completed')
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-full bg-muted/40 p-4 sm:p-6 lg:p-8">
+      <div className="mb-5 flex items-center justify-between border-b bg-card px-5 py-4 shadow-sm">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Tasks</h1>
           <p className="text-muted-foreground mt-2">
@@ -104,7 +104,7 @@ export default function TasksPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="case">Case</Label>
-                <select className="w-full px-3 py-2 border border-border rounded-md">
+                <select className="h-10 w-full rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <option>Smith v. Johnson</option>
                   <option>Corporate Merger</option>
                   <option>Property Dispute</option>
@@ -112,7 +112,7 @@ export default function TasksPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="priority">Priority</Label>
-                <select className="w-full px-3 py-2 border border-border rounded-md">
+                <select className="h-10 w-full rounded-md border-input bg-background px-3 text-sm text-foreground shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <option>Low</option>
                   <option>Medium</option>
                   <option>High</option>

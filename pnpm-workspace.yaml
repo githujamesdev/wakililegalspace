@@ -2,3 +2,5 @@ allowBuilds:
   esbuild: false
   msw: false
   sharp: false
+overrides:
+  hono: 4.12.25

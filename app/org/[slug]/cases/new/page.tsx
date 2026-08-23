@@ -17,6 +17,7 @@ import { ChevronRight, ChevronLeft, Users, Briefcase, CheckCircle2, ArrowLeft } 
 import ClientSearch from '@/components/matters/ClientSearch'
 import CreateClientDrawer from '@/components/matters/CreateClientDrawer'
 import { createMatter } from '@/app/actions/matters'
+import { PRACTICE_AREAS, PRACTICE_FEES, DEFAULT_PRACTICE_AREA } from '@/lib/practice-areas'
 
 const STEPS = [
   { number: 1, title: 'Client', icon: Users, description: 'Select or create client' },
@@ -36,7 +37,8 @@ export default function NewMatterPage() {
 
   const [matterData, setMatterData] = useState({
     title: '',
-    matterType: 'litigation',
+    matterType: DEFAULT_PRACTICE_AREA,
+    agreedFee: PRACTICE_FEES[DEFAULT_PRACTICE_AREA],
     priority: 'medium',
     court: '',
     judge: '',
@@ -51,6 +53,10 @@ export default function NewMatterPage() {
     }
     if (currentStep === 2 && !matterData.title) {
       alert('Please enter a matter title')
+      return
+    }
+    if (currentStep === 2 && (!matterData.agreedFee || matterData.agreedFee <= 0)) {
+      alert('Please enter the total agreed fee for this matter')
       return
     }
     if (currentStep < STEPS.length) {
@@ -76,6 +82,7 @@ export default function NewMatterPage() {
         clientId: selectedClient.id,
         title: matterData.title,
         matterType: matterData.matterType,
+        agreedFee: matterData.agreedFee,
         priority: matterData.priority,
         court: matterData.court,
         judge: matterData.judge,
@@ -97,10 +104,10 @@ export default function NewMatterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-white">
+    <div className="min-h-full bg-muted/40 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
+      <div className="mb-5 border bg-card shadow-sm">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
             <Link href={`/org/${slug}/cases`}>
               <Button variant="ghost" size="sm">
@@ -150,7 +157,7 @@ export default function NewMatterPage() {
         </div>
 
         {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+        <div className="rounded border bg-card p-5 shadow-sm sm:p-8">
           {/* STEP 1: CLIENT SELECTION */}
           {currentStep === 1 && (
             <div className="space-y-6">
@@ -159,7 +166,7 @@ export default function NewMatterPage() {
                 <p className="text-slate-600">Choose an existing client or create a new one</p>
               </div>
 
-              <ClientSearch onSelect={setSelectedClient} />
+              <ClientSearch organizationSlug={slug} onSelect={setSelectedClient} />
 
               {selectedClient && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -195,17 +202,12 @@ export default function NewMatterPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="font-semibold text-slate-900">Matter Type *</Label>
-                    <Select value={matterData.matterType} onValueChange={(value) => setMatterData({ ...matterData, matterType: value })}>
+                    <Select value={matterData.matterType} onValueChange={(value) => setMatterData({ ...matterData, matterType: value, agreedFee: PRACTICE_FEES[value] ?? 0 })}>
                       <SelectTrigger className="mt-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="litigation">Litigation</SelectItem>
-                        <SelectItem value="corporate">Corporate</SelectItem>
-                        <SelectItem value="property">Property</SelectItem>
-                        <SelectItem value="employment">Employment</SelectItem>
-                        <SelectItem value="intellectual-property">Intellectual Property</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        {PRACTICE_AREAS.map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -224,6 +226,12 @@ export default function NewMatterPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div>
+                  <Label className="font-semibold text-slate-900">Total Agreed Fee (KES)</Label>
+                  <Input type="number" min="0" value={matterData.agreedFee / 100} onChange={(e) => setMatterData({ ...matterData, agreedFee: Math.max(0, Math.round(Number(e.target.value || 0) * 100)) })} className="mt-2" />
+                  <p className="mt-1 text-xs text-muted-foreground">Default fee is assigned from the selected practice area and can be overridden.</p>
                 </div>
 
                 {/* Court & Judge */}
@@ -301,6 +309,13 @@ export default function NewMatterPage() {
                   <div className="bg-slate-50 rounded-lg p-4">
                     <p className="text-sm font-medium text-slate-600">Matter Type</p>
                     <p className="font-semibold text-slate-900 mt-1 capitalize">{matterData.matterType}</p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <p className="text-sm font-medium text-slate-600">Total Agreed Fee</p>
+                    <p className="font-semibold text-slate-900 mt-1">
+                      {new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(matterData.agreedFee / 100)}
+                    </p>
                   </div>
 
                   <div className="bg-slate-50 rounded-lg p-4">

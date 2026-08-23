@@ -112,7 +112,7 @@ export default function DashboardPage() {
               <Card
                 key={org.id}
                 className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => router.push(`/org/${org.slug}`)}
+                onClick={() => router.push(`/org/Kes{org.slug}`)}
               >
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between">
@@ -125,7 +125,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <Button className="w-full" asChild>
-                    <Link href={`/org/${org.slug}`}>
+                    <Link href={`/org/Kes{org.slug}`}>
                       Enter Workspace
                     </Link>
                   </Button>

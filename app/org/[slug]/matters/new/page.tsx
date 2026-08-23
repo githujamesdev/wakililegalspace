@@ -17,6 +17,7 @@ import { ChevronRight, ChevronLeft, Users, Briefcase, CheckCircle2, ArrowLeft } 
 import ClientSearch from '@/components/matters/ClientSearch'
 import CreateClientDrawer from '@/components/matters/CreateClientDrawer'
 import { createMatter } from '@/app/actions/matters'
+import { PRACTICE_AREAS, PRACTICE_FEES, DEFAULT_PRACTICE_AREA } from '@/lib/practice-areas'
 
 const STEPS = [
   { number: 1, title: 'Client', icon: Users, description: 'Select or create client' },
@@ -36,7 +37,8 @@ export default function NewMatterPage() {
 
   const [matterData, setMatterData] = useState({
     title: '',
-    matterType: 'litigation',
+    matterType: DEFAULT_PRACTICE_AREA,
+    agreedFee: PRACTICE_FEES[DEFAULT_PRACTICE_AREA],
     priority: 'medium',
     court: '',
     judge: '',
@@ -51,6 +53,10 @@ export default function NewMatterPage() {
     }
     if (currentStep === 2 && !matterData.title) {
       alert('Please enter a matter title')
+      return
+    }
+    if (currentStep === 2 && (!matterData.agreedFee || matterData.agreedFee <= 0)) {
+      alert('Please enter the total agreed fee for this matter')
       return
     }
     if (currentStep < STEPS.length) {
@@ -76,6 +82,7 @@ export default function NewMatterPage() {
         clientId: selectedClient.id,
         title: matterData.title,
         matterType: matterData.matterType,
+        agreedFee: matterData.agreedFee,
         priority: matterData.priority,
         court: matterData.court,
         judge: matterData.judge,
@@ -195,17 +202,19 @@ export default function NewMatterPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="font-semibold text-slate-900">Matter Type *</Label>
-                    <Select value={matterData.matterType} onValueChange={(value) => setMatterData({ ...matterData, matterType: value })}>
+                    <Select
+                      value={matterData.matterType}
+                      onValueChange={(value) =>
+                        setMatterData({ ...matterData, matterType: value, agreedFee: PRACTICE_FEES[value] ?? 0 })
+                      }
+                    >
                       <SelectTrigger className="mt-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="litigation">Litigation</SelectItem>
-                        <SelectItem value="corporate">Corporate</SelectItem>
-                        <SelectItem value="property">Property</SelectItem>
-                        <SelectItem value="employment">Employment</SelectItem>
-                        <SelectItem value="intellectual-property">Intellectual Property</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        {PRACTICE_AREAS.map(([value, label]) => (
+                          <SelectItem key={value} value={value}>{label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -224,6 +233,25 @@ export default function NewMatterPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div>
+                  <Label className="font-semibold text-slate-900">Total Agreed Fee (KES) *</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={matterData.agreedFee / 100}
+                    onChange={(e) =>
+                      setMatterData({
+                        ...matterData,
+                        agreedFee: Math.max(0, Math.round(Number(e.target.value || 0) * 100)),
+                      })
+                    }
+                    className="mt-2"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Default fee is assigned from the selected practice area and can be overridden.
+                  </p>
                 </div>
 
                 {/* Court & Judge */}
