@@ -5,15 +5,13 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { getMatterWithDetails } from '@/app/actions/matters'
 import { FinancialsCard } from '@/components/matters/FinancialsCard'
+import { MatterDocumentsCard } from '@/components/documents/MatterDocumentsCard'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import {
   ArrowLeft,
   Briefcase,
-  Download,
-  FileText,
-  Plus,
   User,
   AlertCircle,
   Loader,
@@ -168,44 +166,7 @@ export default function CaseDetailPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Documents Section */}
-          <Card className="p-6 border-slate-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-600" />
-                Documents
-              </h2>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-1" />
-                Upload
-              </Button>
-            </div>
-
-            {matter.documents && matter.documents.length > 0 ? (
-              <div className="space-y-2">
-                {matter.documents.map((doc: any) => (
-                  <div
-                    key={doc.id}
-                    className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-slate-900 truncate">{doc.title}</p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {doc.documentType || 'Document'} • {formatDate(doc.createdAt)}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <FileText className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-                <p className="text-slate-500 text-sm">No documents uploaded yet</p>
-              </div>
-            )}
-          </Card>
+          <MatterDocumentsCard slug={slug} caseId={caseId} caseTitle={matter.title} />
         </div>
 
         {/* Sidebar */}
