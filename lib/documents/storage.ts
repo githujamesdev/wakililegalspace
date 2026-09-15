@@ -68,13 +68,19 @@ export function resolveStoredPath(storageKey: string) {
 }
 
 const isVercelRuntime = () => process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV)
-const usesBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+
+// Vercel Blob uses BLOB_READ_WRITE_TOKEN. The second name keeps deployments
+// created through older project templates compatible while the integration is
+// being reattached to the current project.
+const blobToken = () =>
+  process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_READ_WRITE_TOKEN || ''
+const usesBlob = () => Boolean(blobToken())
 const blobKey = (key: string) => `documents/${key}`
 
 function assertStorageAvailable() {
   if (isVercelRuntime() && !usesBlob()) {
     throw new Error(
-      'Document storage is not configured for this deployment. Connect Vercel Blob and redeploy so BLOB_READ_WRITE_TOKEN is available.'
+      'Document storage is unavailable in this deployment. The Blob integration is connected, but BLOB_READ_WRITE_TOKEN is not present in this deployment environment. Redeploy after attaching Blob to Preview/Production.'
     )
   }
 }
