@@ -81,6 +81,14 @@ const blobToken = () =>
 const usesBlob = () => isVercelRuntime() || Boolean(blobToken())
 const blobKey = (key: string) => `documents/${key}`
 
+function assertStorageAvailable() {
+  if (isVercelRuntime() && !blobToken()) {
+    throw new Error(
+      'Document storage is unavailable in this deployment. Connect Vercel Blob and redeploy so BLOB_READ_WRITE_TOKEN is available.'
+    )
+  }
+}
+
 export async function saveFile(
   organizationId: string,
   fileName: string,
@@ -136,6 +144,7 @@ export async function deleteStoredFile(storageKey: string) {
     return false
   }
 }
+
 
 
 // import { createHash, randomUUID } from 'node:crypto'
