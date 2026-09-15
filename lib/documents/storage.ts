@@ -74,16 +74,12 @@ const isVercelRuntime = () => process.env.VERCEL === '1' || Boolean(process.env.
 // being reattached to the current project.
 const blobToken = () =>
   process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_READ_WRITE_TOKEN || ''
-const usesBlob = () => Boolean(blobToken())
-const blobKey = (key: string) => `documents/${key}`
 
-function assertStorageAvailable() {
-  if (isVercelRuntime() && !usesBlob()) {
-    throw new Error(
-      'Document storage is unavailable in this deployment. The Blob integration is connected, but BLOB_READ_WRITE_TOKEN is not present in this deployment environment. Redeploy after attaching Blob to Preview/Production.'
-    )
-  }
-}
+// On Vercel, always use Blob. The Blob SDK reads the project token at runtime;
+// checking process.env here caused valid connected deployments to be rejected
+// before the SDK could authenticate the upload.
+const usesBlob = () => isVercelRuntime() || Boolean(blobToken())
+const blobKey = (key: string) => `documents/${key}`
 
 export async function saveFile(
   organizationId: string,
