@@ -67,8 +67,17 @@ export function resolveStoredPath(storageKey: string) {
   return absolute
 }
 
+const isVercelRuntime = () => process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV)
 const usesBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 const blobKey = (key: string) => `documents/${key}`
+
+function assertStorageAvailable() {
+  if (isVercelRuntime() && !usesBlob()) {
+    throw new Error(
+      'Document storage is not configured for this deployment. Connect Vercel Blob and redeploy so BLOB_READ_WRITE_TOKEN is available.'
+    )
+  }
+}
 
 export async function saveFile(
   organizationId: string,
@@ -86,6 +95,8 @@ export async function saveFile(
 
   const checksum = createHash('sha256').update(bytes).digest('hex')
   const contentType = mimeFor(fileName)
+
+  assertStorageAvailable()
 
   if (usesBlob()) {
     const blob = await put(blobKey(key), bytes, {
