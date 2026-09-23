@@ -1,10 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 import { del, get, put } from '@vercel/blob'
-
-export const STORAGE_ROOT =
-  process.env.DOCUMENT_STORAGE_DIR || path.join(process.cwd(), '.data', 'documents')
+import path from 'node:path'
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
 
@@ -26,7 +22,7 @@ const ALLOWED: Record<string, string> = {
 }
 
 export const ACCEPTED_EXTENSIONS = Object.keys(ALLOWED)
-export const ACCEPT_ATTRIBUTE = ACCEPTED_EXTENSIONS.map((e) => `.${e}`).join(',')
+export const ACCEPT_ATTRIBUTE = ACCEPTED_EXTENSIONS.map((extension) => `.${extension}`).join(',')
 
 export function extensionOf(fileName: string) {
   return path.extname(fileName).replace('.', '').toLowerCase()
@@ -58,91 +54,40 @@ export function sanitizeFileName(fileName: string) {
   return cleaned || 'document'
 }
 
-export function resolveStoredPath(storageKey: string) {
-  const absolute = path.resolve(STORAGE_ROOT, storageKey)
-  const root = path.resolve(STORAGE_ROOT)
-  if (absolute !== root && !absolute.startsWith(root + path.sep)) {
-    throw new Error('Refusing to access a path outside the document storage root')
-  }
-  return absolute
-}
-
-const isVercelRuntime = () => process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV)
-
-// Vercel Blob uses BLOB_READ_WRITE_TOKEN. The second name keeps deployments
-// created through older project templates compatible while the integration is
-// being reattached to the current project.
-const blobToken = () =>
-  process.env.BLOB_READ_WRITE_TOKEN || process.env.VERCEL_BLOB_READ_WRITE_TOKEN || ''
-
-// On Vercel, always use Blob. The Blob SDK reads the project token at runtime;
-// checking process.env here caused valid connected deployments to be rejected
-// before the SDK could authenticate the upload.
-const usesBlob = () => isVercelRuntime() || Boolean(blobToken())
-const blobKey = (key: string) => `documents/${key}`
-
-function assertStorageAvailable() {
-  if (isVercelRuntime() && !blobToken()) {
-    throw new Error(
-      'Document storage is unavailable in this deployment. Connect Vercel Blob and redeploy so BLOB_READ_WRITE_TOKEN is available.'
-    )
+function assertBlobConfigured() {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error('Document storage is unavailable in this deployment. Connect Vercel Blob and redeploy so BLOB_READ_WRITE_TOKEN is available.')
   }
 }
 
-export async function saveFile(
-  organizationId: string,
-  fileName: string,
-  bytes: Buffer
-): Promise<{ storageKey: string; checksum: string; size: number }> {
-  const now = new Date()
-  const safeOrg = sanitizeFileName(organizationId)
-  const key = path.posix.join(
-    safeOrg,
-    String(now.getFullYear()),
-    String(now.getMonth() + 1).padStart(2, '0'),
-    `${randomUUID()}__${sanitizeFileName(fileName)}`
-  )
+export async function saveFile(organizationId: string, fileName: string, bytes: Buffer) {
+  assertBlobConfigured()
 
-  const checksum = createHash('sha256').update(bytes).digest('hex')
-  const contentType = mimeFor(fileName)
+  const storageKey = `documents/${sanitizeFileName(organizationId)}/${new Date().getFullYear()}/${randomUUID()}__${sanitizeFileName(fileName)}`
+  const blob = await put(storageKey, bytes, {
+    access: 'private',
+    addRandomSuffix: false,
+    contentType: mimeFor(fileName),
+  })
 
-  assertStorageAvailable()
-
-  if (usesBlob()) {
-    const blob = await put(blobKey(key), bytes, {
-      access: 'private',
-      contentType,
-      addRandomSuffix: false,
-    })
-    return { storageKey: `blob:${blob.pathname}`, checksum, size: bytes.byteLength }
+  return {
+    storageKey: blob.url,
+    checksum: createHash('sha256').update(bytes).digest('hex'),
+    size: bytes.byteLength,
   }
-
-  const absolute = resolveStoredPath(key)
-  await mkdir(path.dirname(absolute), { recursive: true })
-  await writeFile(absolute, bytes)
-  return { storageKey: `local:${key}`, checksum, size: bytes.byteLength }
 }
 
 export async function readStoredFile(storageKey: string) {
-  if (storageKey.startsWith('blob:')) {
-    const result = await get(storageKey.slice(5), { access: 'private' })
-    if (!result || result.statusCode === 304) throw new Error('Document not found')
-    return Buffer.from(await new Response(result.stream).arrayBuffer())
-  }
-  return readFile(resolveStoredPath(storageKey.replace(/^local:/, '')))
+  assertBlobConfigured()
+  const result = await get(storageKey, { access: 'private' })
+  if (!result || result.statusCode !== 200) throw new Error('Stored file not found')
+  return Buffer.from(await new Response(result.stream).arrayBuffer())
 }
 
 export async function deleteStoredFile(storageKey: string) {
-  try {
-    if (storageKey.startsWith('blob:')) {
-      await del(storageKey.slice(5))
-    } else {
-      await unlink(resolveStoredPath(storageKey.replace(/^local:/, '')))
-    }
-    return true
-  } catch {
-    return false
-  }
+  assertBlobConfigured()
+  await del(storageKey)
+  return true
 }
 
 
