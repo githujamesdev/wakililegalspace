@@ -32,7 +32,7 @@ import {
   Mail,
   MapPin,
   Calendar,
-  DollarSign,
+  WalletCards,
   Briefcase,
   Eye,
   Edit,
@@ -208,7 +208,7 @@ export default function ClientsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-full bg-muted/40 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-full bg-[#f6f8fb] p-4 sm:p-6 lg:p-8">
         <div className="h-12 bg-slate-200 rounded animate-pulse" />
         <div className="grid grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
@@ -224,14 +224,15 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Practice directory</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
             Clients
           </h1>
-          <p className="text-slate-600 mt-2">Manage your client relationships and matters</p>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">Manage client relationships, contact details, and matter activity from one reliable register.</p>
         </div>
         <Button
           onClick={() => setShowNewClientDialog(true)}
-          className="gap-2 shadow-sm"
+          className="gap-2 rounded-lg bg-emerald-700 px-4 shadow-sm hover:bg-emerald-800"
         >
           <Plus className="w-4 h-4" />
           New Client
@@ -239,7 +240,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="Total Clients"
           value={statistics?.totalClients || 0}
@@ -273,13 +274,13 @@ export default function ClientsPage() {
         <StatCard
           title="Outstanding"
           value={formatCurrency(statistics?.outstandingBalance || 0)}
-          icon={DollarSign}
+          icon={WalletCards}
           color="red"
         />
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
           <Input
@@ -292,9 +293,9 @@ export default function ClientsPage() {
       </div>
 
   {/* Clients List */}
-  <div className="overflow-hidden rounded border border-border bg-card shadow-sm">
+  <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
   <div className="hidden grid-cols-[minmax(180px,1.3fr)_minmax(220px,1.4fr)_minmax(120px,0.8fr)_100px_140px_44px] gap-4 border-b bg-muted/50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground md:grid"><span>Client</span><span>Contact</span><span>Location</span><span>Matters</span><span>Outstanding</span><span /></div>
-  <div className="divide-y">
+  <div className="divide-y divide-slate-100">
   {filteredClients.length > 0 ? (
           filteredClients.map((c) => (
             <ClientListRow
@@ -671,7 +672,7 @@ function StatCard({ title, value, icon: Icon, color }: any) {
   }
 
   return (
-    <Card className="border-slate-200 hover:shadow-md transition-shadow">
+    <Card className="rounded-xl border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div>
@@ -716,7 +717,7 @@ function ClientListRow({ client, onEdit, onDelete }: any) {
 
   return (
     <>
-      <div className="grid gap-3 bg-card px-5 py-4 transition-colors hover:bg-muted/30 md:grid-cols-[minmax(180px,1.3fr)_minmax(220px,1.4fr)_minmax(120px,0.8fr)_100px_140px_44px] md:items-center md:gap-4">
+      <div className="grid gap-3 bg-white px-5 py-4 transition-colors hover:bg-slate-50 md:grid-cols-[minmax(180px,1.3fr)_minmax(220px,1.4fr)_minmax(120px,0.8fr)_100px_140px_44px] md:items-center md:gap-4">
         <div className="min-w-0"><p className="truncate font-semibold text-foreground">{client.name}</p><div className="mt-1 flex gap-2"><span className={`rounded px-2 py-0.5 text-xs font-medium ${getStatusColor(client.status)}`}>{client.status}</span><span className={`rounded px-2 py-0.5 text-xs font-medium ${getClientTypeColor(client.clientType)}`}>{client.clientType === 'individual' ? 'Individual' : 'Corporate'}</span></div></div>
         <div className="min-w-0 text-sm text-muted-foreground"><p className="truncate">{client.email || '—'}</p><p className="truncate text-xs">{client.phone || 'No phone number'}</p></div>
         <div className="text-sm text-muted-foreground">{client.city || '—'}</div>

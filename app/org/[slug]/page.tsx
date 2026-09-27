@@ -23,7 +23,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ slug
     ['Active matters', data.metrics.activeMatters, Briefcase],
     ["Today's hearings", data.metrics.todaysHearings, Calendar],
     ['Tasks due today', data.metrics.tasksDueToday, CheckCircle2],
-    ['Outstanding fees', formatMoney(data.metrics.outstandingFees), DollarSign],
+    ['Outstanding fees', formatMoney(data.metrics.outstandingFees), "Kes"],
   ] as const
 
   return <div className="min-h-full bg-muted/40"><header className="border-b bg-card"><div className="mx-auto flex max-w-[1600px] items-center justify-between px-5 py-5 sm:px-8"><div><div className="mb-2 text-xs text-muted-foreground">Overview / Dashboard</div><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{greeting}, {session.user.name || 'User'}</h1><p className="mt-1 text-sm text-muted-foreground">{new Intl.DateTimeFormat('en-US', { dateStyle: 'full' }).format(new Date())}</p></div><Button asChild className="gap-2"><Link href={`/org/Kes{slug}/cases/new`}><Plus data-icon="inline-start" /> New matter</Link></Button></div></header><main className="mx-auto max-w-[1600px] px-5 py-6 sm:px-8">

@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { logMatterPayment, updateMatterAgreedFee } from '@/app/actions/matters'
-import { DollarSign, Plus, Printer, AlertCircle, Pencil } from 'lucide-react'
+import { WalletCards, Plus, Printer, AlertCircle, Pencil } from 'lucide-react'
 
 const money = (cents: number) =>
   new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format((cents || 0) / 100)
@@ -118,15 +118,28 @@ export function FinancialsCard({ matter, slug }: { matter: any; slug: string }) 
         <div class="due"><span>Balance Due</span><span>${money(balance)}</span></div>
       </div></body></html>`
 
-    const win = window.open('', '_blank', 'noopener,noreferrer,width=820,height=900')
-    if (!win) {
-      setError('Allow pop-ups to generate the invoice.')
-      return
+    // Rendered in a hidden iframe rather than a popup: window.open() returns null
+    // whenever "noopener" is passed, which left an unwritable blank window behind.
+    const frame = document.createElement('iframe')
+    frame.title = 'Invoice preview'
+    frame.setAttribute('aria-hidden', 'true')
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden'
+
+    frame.onload = () => {
+      const win = frame.contentWindow
+      if (!win) {
+        frame.remove()
+        setError('The invoice could not be generated. Please try again.')
+        return
+      }
+
+      win.focus()
+      win.print()
+      window.setTimeout(() => frame.remove(), 1000)
     }
-    win.document.write(html)
-    win.document.close()
-    win.focus()
-    win.print()
+
+    document.body.appendChild(frame)
+    frame.srcdoc = html
   }
 
   return (
@@ -134,8 +147,8 @@ export function FinancialsCard({ matter, slug }: { matter: any; slug: string }) 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4">
         <div>
           <h2 className="flex items-center gap-2 font-semibold">
-            {/* <DollarSign className="h-4 w-4 text-primary" /> */}
-            Financials & Payment Status
+            <WalletCards className="h-4 w-4 text-primary" />
+            Financials &amp; Payment Status
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
             {statusLabel} · live billing position for this matter

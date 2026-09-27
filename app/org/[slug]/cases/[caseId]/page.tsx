@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import {
   ArrowLeft,
-  Briefcase,
   User,
   AlertCircle,
   Loader,
@@ -43,23 +42,6 @@ const getPriorityColor = (priority: string) => {
   }
 }
 
-const formatCurrency = (cents: number) => {
-  return new Intl.NumberFormat('en-KE', {
-    style: 'currency',
-    currency: 'KES',
-    currencyDisplay: 'code',
-  }).format(cents / 100)
-}
-
-const formatDate = (date: Date | string) => {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return new Intl.DateTimeFormat('en-KE', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(d)
-}
-
 export default function CaseDetailPage() {
   const params = useParams()
   const slug = params.slug as string
@@ -67,6 +49,7 @@ export default function CaseDetailPage() {
 
   const [matter, setMatter] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
     const fetchMatter = async () => {
@@ -101,19 +84,9 @@ export default function CaseDetailPage() {
   }
 
   const caseTabs = [
-    { label: 'Overview', href: '#overview' },
-    { label: 'Timeline', href: '#timeline' },
-    { label: 'Court Attendances', href: '#court-attendances' },
-    { label: 'Tasks', href: '#tasks' },
-    { label: 'Calendar', href: '#calendar' },
-    { label: 'Documents', href: '#documents' },
-    { label: 'Invoices', href: '#invoices' },
-    { label: 'Payments', href: '#payments' },
-    { label: 'Receipts', href: '#receipts' },
-    { label: 'Communications', href: '#communications' },
-    { label: 'Billing', href: '#billing' },
-    { label: 'AI Assistant', href: '#ai-assistant' },
-    { label: 'Audit Trail', href: '#audit-trail' },
+    { label: 'Overview', id: 'overview' },
+    { label: 'Documents', id: 'documents' },
+    { label: 'Financials', id: 'financials' },
   ]
 
   return (
@@ -140,18 +113,22 @@ export default function CaseDetailPage() {
 
       <nav aria-label="Case sections" className="overflow-x-auto rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-sm">
         <div className="flex min-w-max items-center gap-1">
-          {caseTabs.map((tab, index) => (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`border-b-2 px-3 py-3 text-xs font-medium transition-colors ${index === 0 ? 'border-emerald-700 text-emerald-800' : 'border-transparent text-slate-500 hover:border-emerald-300 hover:text-slate-900'}`}
+          {caseTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              aria-current={activeTab === tab.id ? 'page' : undefined}
+              className={`border-b-2 px-3 py-3 text-xs font-medium transition-colors ${activeTab === tab.id ? 'border-emerald-700 text-emerald-800' : 'border-transparent text-slate-500 hover:border-emerald-300 hover:text-slate-900'}`}
             >
               {tab.label}
-            </Link>
+            </button>
           ))}
         </div>
       </nav>
 
+      {activeTab === 'overview' && (
+        <>
       {/* Matter Info */}
       <div id="overview" className="grid grid-cols-1 md:grid-cols-4 gap-4 scroll-mt-6">
         <Card className="p-4 border-slate-200">
@@ -179,90 +156,35 @@ export default function CaseDetailPage() {
           <p className="text-slate-600">{matter.description}</p>
         </Card>
       )}
+        </>
+      )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[
-          ['timeline', 'Timeline', 'Matter events and updates will appear here.'],
-          ['court-attendances', 'Court Attendances', 'Record mentions, hearings, proceedings, and orders.'],
-          ['tasks', 'Tasks', 'Matter tasks and due dates will appear here.'],
-          ['calendar', 'Calendar', 'Upcoming court dates and deadlines will appear here.'],
-          ['invoices', 'Invoices', 'Invoices raised for this matter will appear here.'],
-          ['payments', 'Payments', 'Payments received will appear here.'],
-          ['communications', 'Communications', 'Matter correspondence will appear here.'],
-          ['billing', 'Billing', 'Fees, disbursements, VAT, and balances are managed here.'],
-          ['ai-assistant', 'AI Assistant', 'AI-generated matter support will appear here after review.'],
-          ['audit-trail', 'Audit Trail', 'A record of matter changes will appear here.'],
-        ].map(([id, title, description]) => (
-          <section key={id} id={id} className="scroll-mt-6 rounded-lg border border-slate-200 bg-white p-4">
-            <h3 className="font-semibold text-slate-900">{title}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
-          </section>
-        ))}
-      </div>
+      {activeTab === 'documents' && (
+        <section id="documents" className="scroll-mt-6">
+          <MatterDocumentsCard slug={slug} caseId={caseId} caseTitle={matter.title} />
+        </section>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Documents Section */}
-          <section id="documents" className="scroll-mt-6">
-            <MatterDocumentsCard slug={slug} caseId={caseId} caseTitle={matter.title} />
-          </section>
-        </div>
+      {activeTab === 'financials' && (
+        <section id="financials" className="scroll-mt-6">
+          <FinancialsCard matter={matter} slug={slug} />
+        </section>
+      )}
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Parties Section */}
-          <section id="parties" className="scroll-mt-6">
-            <Card className="border-slate-200 p-4">
-              <h3 className="mb-3 flex items-center gap-2 font-semibold text-slate-900">
-                <User className="h-4 w-4 text-emerald-700" />
-                Case Parties
-              </h3>
-              <div className="space-y-3 text-sm">
-                {matter.client && <p><span className="font-medium">Client:</span> {matter.client.name}</p>}
-                {matter.opponent && <p><span className="font-medium">Opposing party:</span> {matter.opponent}</p>}
-              </div>
-            </Card>
-          </section>
-
-          {/* Client Info */}
-          {matter.client && (
-            <Card className="p-4 border-slate-200">
-              <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-600" />
-                Client
-              </h3>
-              <p className="font-medium text-slate-900">{matter.client.name}</p>
-              {matter.client.email && (
-                <p className="text-sm text-slate-600 mt-1">{matter.client.email}</p>
-              )}
-              {matter.client.phone && (
-                <p className="text-sm text-slate-600">{matter.client.phone}</p>
-              )}
-              <p className="text-xs text-slate-500 mt-2 capitalize">
-                {matter.client.clientType}
-              </p>
-            </Card>
-          )}
-
-          <section id="fees" className="scroll-mt-6">
-            <FinancialsCard matter={matter} slug={slug} />
-          </section>
-
-          <section id="receipts" className="scroll-mt-6 rounded-lg border border-slate-200 bg-white p-4">
-            <h3 className="font-semibold text-slate-900">Receipts</h3>
-            <p className="mt-2 text-sm text-slate-500">Receipts will appear here when payments are recorded for this matter.</p>
-          </section>
-
-          {/* Opponent Info */}
-          {matter.opponent && (
-            <Card className="p-4 border-slate-200">
-              <h3 className="font-semibold text-slate-900 mb-2">Opposing Party</h3>
-              <p className="text-slate-600">{matter.opponent}</p>
-            </Card>
-          )}
-        </div>
-      </div>
+      {activeTab === 'overview' && matter.client && (
+        <Card className="border-slate-200 p-4">
+          <h3 className="mb-3 flex items-center gap-2 font-semibold text-slate-900">
+            <User className="h-4 w-4 text-emerald-700" />
+            Case Parties
+          </h3>
+          <div className="grid gap-3 text-sm md:grid-cols-2">
+            <p><span className="font-medium">Client:</span> {matter.client.name}</p>
+            {matter.opponent && <p><span className="font-medium">Opposing party:</span> {matter.opponent}</p>}
+            {matter.client.email && <p><span className="font-medium">Email:</span> {matter.client.email}</p>}
+            {matter.client.phone && <p><span className="font-medium">Phone:</span> {matter.client.phone}</p>}
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

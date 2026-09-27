@@ -1,244 +1,36 @@
-'use client'
-
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { getDashboardData } from '@/app/actions/dashboard'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Plus, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { AlertCircle, ArrowRight, Bell, Briefcase, Calendar, CheckCircle2, WalletCards, Plus, Zap } from 'lucide-react'
 
-const mockTimeEntries = [
-  {
-    id: '1',
-    date: '2024-06-05',
-    description: 'Review motion brief - Smith v. Johnson',
-    case: 'Smith v. Johnson',
-    hours: 2.5,
-    minutes: 30,
-    billableRate: 350,
-    isBillable: true,
-    total: 875,
-  },
-  {
-    id: '2',
-    date: '2024-06-05',
-    description: 'Client consultation',
-    case: 'Corporate Merger',
-    hours: 1,
-    minutes: 0,
-    billableRate: 350,
-    isBillable: true,
-    total: 350,
-  },
-  {
-    id: '3',
-    date: '2024-06-04',
-    description: 'Document preparation',
-    case: 'Property Dispute',
-    hours: 3,
-    minutes: 15,
-    billableRate: 300,
-    isBillable: true,
-    total: 975,
-  },
-]
+const formatMoney = (cents: number) => new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format((cents || 0) / 100)
+const formatTime = (date: Date | null) => date ? new Intl.DateTimeFormat('en-KE', { hour: 'numeric', minute: '2-digit' }).format(new Date(date)) : '—'
+const formatDate = (date: Date | null) => date ? new Intl.DateTimeFormat('en-KE', { month: 'short', day: 'numeric' }).format(new Date(date)) : 'No date'
 
-export default function TimeTrackingPage() {
-  const [isOpen, setIsOpen] = useState(false)
+export default async function DashboardPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) redirect('/sign-in')
+  const data = await getDashboardData(slug)
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+  const cards = [
+    ['Active matters', data.metrics.activeMatters, Briefcase],
+    ["Today's hearings", data.metrics.todaysHearings, Calendar],
+    ['Tasks due today', data.metrics.tasksDueToday, CheckCircle2],
+    ['Outstanding fees', formatMoney(data.metrics.outstandingFees), WalletCards],
+  ] as const
 
-  const totalHours = mockTimeEntries.reduce(
-    (sum, entry) => sum + entry.hours + entry.minutes / 60,
-    0
-  )
-  const totalBillable = mockTimeEntries.reduce(
-    (sum, entry) => sum + (entry.isBillable ? entry.total : 0),
-    0
-  )
-
-  return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Time Tracking</h1>
-          <p className="text-muted-foreground mt-2">
-            Track billable hours and generate invoices
-          </p>
-        </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Log Time
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Log Time Entry</DialogTitle>
-              <DialogDescription>
-                Record billable hours for a case
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="case">Case</Label>
-                <select className="w-full px-3 py-2 border border-border rounded-md">
-                  <option>Smith v. Johnson</option>
-                  <option>Corporate Merger</option>
-                  <option>Property Dispute</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  placeholder="e.g., Review motion brief"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="hours">Hours</Label>
-                  <Input id="hours" type="number" min="0" placeholder="0" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="minutes">Minutes</Label>
-                  <Input
-                    id="minutes"
-                    type="number"
-                    min="0"
-                    max="59"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="rate">Billable Rate ($)</Label>
-                <Input id="rate" type="number" placeholder="350" />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="billable" defaultChecked />
-                <Label htmlFor="billable" className="font-normal">
-                  Mark as billable
-                </Label>
-              </div>
-              <Button className="w-full">Log Time</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Hours This Month
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <Clock className="h-6 w-6 text-primary" />
-              {totalHours.toFixed(1)}h
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Billable Amount
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${totalBillable.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Entries This Month
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockTimeEntries.length}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Time Entries</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Case</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Rate</TableHead>
-                  <TableHead>Billable</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockTimeEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{entry.date}</TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {entry.description}
-                    </TableCell>
-                    <TableCell>{entry.case}</TableCell>
-                    <TableCell>
-                      {entry.hours}h {entry.minutes}m
-                    </TableCell>
-                    <TableCell>${entry.billableRate}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          entry.isBillable
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {entry.isBillable ? 'Yes' : 'No'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      ${entry.total.toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+  return <div className="min-h-full bg-[#f6f8fb]"><header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-[1600px] items-center justify-between px-5 py-6 sm:px-8"><div><div className="mb-2 text-xs text-muted-foreground">Overview / Dashboard</div><h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{greeting}, {session.user.name || 'User'}</h1><p className="mt-1 text-sm text-muted-foreground">{new Intl.DateTimeFormat('en-US', { dateStyle: 'full' }).format(new Date())}</p></div><Button asChild className="gap-2"><Link href={`/org/${slug}/cases/new`}><Plus data-icon="inline-start" /> New matter</Link></Button></div></header><main className="mx-auto max-w-[1600px] px-5 py-6 sm:px-8">
+    <div className="mb-6 flex items-center gap-3 border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900"><Bell className="size-4 shrink-0 text-blue-700" /><span><strong>Practice overview:</strong> Live data from {data.organizationName}.</span><Link href={`/org/${slug}/calendar`} className="ml-auto hidden font-medium text-blue-700 hover:underline sm:block">View calendar</Link></div>
+    <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(([label, value, Icon]) => <Card key={label} className="rounded-xl border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"><CardContent className="flex items-start justify-between p-5"><div><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 text-3xl font-semibold">{value}</p></div><div className="flex size-10 items-center justify-center rounded bg-muted"><Icon className="size-5 text-primary" /></div></CardContent></Card>)}</section>
+    <div className="grid gap-6 xl:grid-cols-[1.45fr_.8fr]"><Card className="rounded-xl border-slate-200 bg-white shadow-sm"><CardHeader className="flex-row items-center justify-between border-b px-5 py-4"><div><CardTitle className="text-base">Upcoming hearings</CardTitle><p className="mt-1 text-xs text-muted-foreground">Scheduled court appearances</p></div><Button asChild variant="outline" size="sm"><Link href={`/org/${slug}/calendar`}>Full calendar <ArrowRight data-icon="inline-end" /></Link></Button></CardHeader><CardContent className="p-0"><div className="divide-y">{data.upcomingHearings.length ? data.upcomingHearings.map((hearing) => <div key={`${hearing.title}-${hearing.startTime.toISOString()}`} className="flex items-center gap-4 px-5 py-4"><div className="w-20 shrink-0 text-sm font-semibold">{formatTime(hearing.startTime)}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{hearing.title}</p><p className="mt-1 text-xs text-muted-foreground">{hearing.location || 'Location not set'}</p></div><Badge>Upcoming</Badge></div>) : <p className="px-5 py-8 text-sm text-muted-foreground">No upcoming hearings.</p>}</div></CardContent></Card><Card className="rounded-xl border-slate-200 bg-white shadow-sm"><CardHeader className="border-b px-5 py-4"><CardTitle className="text-base">Upcoming tasks</CardTitle></CardHeader><CardContent className="p-0"><div className="divide-y">{data.upcomingTasks.length ? data.upcomingTasks.map((item) => <div key={item.title} className="flex items-center gap-3 px-5 py-4"><div className="size-2 rounded-full bg-amber-500" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-muted-foreground">Due {formatDate(item.dueDate)}</p></div><Badge variant={item.priority === 'high' ? 'destructive' : 'outline'}>{item.priority}</Badge></div>) : <p className="px-5 py-8 text-sm text-muted-foreground">No upcoming tasks.</p>}</div></CardContent></Card></div>
+    <Card className="mt-6 rounded border shadow-sm"><CardHeader className="flex-row items-center justify-between border-b px-5 py-4"><div><CardTitle className="text-base">Active matters</CardTitle><p className="mt-1 text-xs text-muted-foreground">Open matters requiring attention</p></div><Button asChild variant="ghost" size="sm"><Link href={`/org/${slug}/cases`}>View all <ArrowRight data-icon="inline-end" /></Link></Button></CardHeader><CardContent className="p-0"><div className="divide-y">{data.activeMatters.length ? data.activeMatters.map((matter) => <div key={matter.id} className="flex items-center gap-4 px-5 py-4"><div className="flex size-9 items-center justify-center rounded bg-muted"><Briefcase className="size-4 text-primary" /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{matter.title}</p><p className="mt-1 text-xs text-muted-foreground">{matter.clientName}</p></div><div className="hidden text-right sm:block"><p className="text-xs text-muted-foreground">Target {formatDate(matter.targetDate)}</p></div><Badge>{matter.status}</Badge></div>) : <p className="px-5 py-8 text-sm text-muted-foreground">No active matters.</p>}</div></CardContent></Card>
+    <Card className="mt-6 rounded border shadow-sm"><CardHeader className="border-b px-5 py-4"><CardTitle className="flex items-center gap-2 text-base"><Zap className="size-4 text-amber-600" /> Practice insights</CardTitle></CardHeader><CardContent className="grid gap-3 p-5 sm:grid-cols-3"><div className="rounded border border-amber-200 bg-amber-50 p-3 text-sm"><AlertCircle className="mb-2 size-4 text-amber-700" /><strong>{data.metrics.tasksDueToday}</strong> tasks due today.</div><div className="rounded border border-blue-200 bg-blue-50 p-3 text-sm"><Calendar className="mb-2 size-4 text-blue-700" /><strong>{data.metrics.todaysHearings}</strong> hearings today.</div><div className="rounded border border-rose-200 bg-rose-50 p-3 text-sm"><WalletCards className="mb-2 size-4 text-rose-700" /><strong>{formatMoney(data.metrics.outstandingFees)}</strong> outstanding of {formatMoney(data.metrics.totalAgreedFees)} agreed &middot; {formatMoney(data.metrics.collectedFees)} collected.</div></CardContent></Card>
+  </main></div>
 }
