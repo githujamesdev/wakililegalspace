@@ -7,9 +7,10 @@ import {
   getDocumentDetails,
 } from '@/app/actions/document-collaboration'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const documentId = params.id
+    const { id } = await params
+    const documentId = id
     const details = await getDocumentDetails(documentId)
     return NextResponse.json(details)
   } catch (error: any) {
@@ -17,9 +18,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const documentId = params.id
+    const { id } = await params
+    const documentId = id
     const body = await req.json()
     const { action, ...data } = body
 

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { document } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { document, organizationMember } from '@/lib/db/schema'
+import { and, eq } from 'drizzle-orm'
 import { mimeFor, readStoredFile } from '@/lib/documents/storage'
 
 /**
@@ -32,7 +32,22 @@ export async function GET(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
 
-    // Private documents stay with their uploader.
+    const membership = await db
+      .select({ id: organizationMember.id })
+      .from(organizationMember)
+      .where(
+        and(
+          eq(organizationMember.organizationId, doc.organizationId),
+          eq(organizationMember.userId, session.user.id),
+        ),
+      )
+      .limit(1)
+
+    if (!membership[0]) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Private documents are visible to authorized firm members only.
     if (doc.visibility === 'private' && doc.userId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }

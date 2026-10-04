@@ -6,9 +6,10 @@ import { hashPassword, generateTemporaryPassword } from '@/lib/auth-utils'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     const { email, name, role } = await request.json()
 
     // Validate input
@@ -37,7 +38,7 @@ export async function POST(
     const org = await db
       .select()
       .from(organization)
-      .where(eq(organization.slug, params.slug))
+      .where(eq(organization.slug, slug))
       .limit(1)
 
     if (org.length === 0) {
@@ -115,14 +116,15 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     // Get organization
     const org = await db
       .select()
       .from(organization)
-      .where(eq(organization.slug, params.slug))
+      .where(eq(organization.slug, slug))
       .limit(1)
 
     if (org.length === 0) {

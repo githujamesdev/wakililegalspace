@@ -1,20 +1,21 @@
 'use server'
 
-import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { case_, client, invoice, payment, document } from '@/lib/db/schema'
-import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { eq, and, desc } from 'drizzle-orm'
+import { requireOrganizationMember } from '@/lib/authorization'
+import { nanoid } from 'nanoid'
 
-async function getUserId() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) throw new Error('Unauthorized')
-  return session.user.id
+async function getUserId(organizationId: string) {
+  const membership = await requireOrganizationMember(organizationId)
+  return membership.userId
 }
 
 export async function getMatters(organizationId: string) {
-  const userId = await getUserId()
+  const membership = await requireOrganizationMember(organizationId)
+  const userId = membership.userId
+  const resolvedOrganizationId = membership.organizationId
 
   try {
     const matters = await db
@@ -35,7 +36,7 @@ export async function getMatters(organizationId: string) {
       .from(case_)
       .where(
         and(
-          eq(case_.organizationId, organizationId),
+          eq(case_.organizationId, resolvedOrganizationId),
           eq(case_.userId, userId)
         )
       )
@@ -49,18 +50,19 @@ export async function getMatters(organizationId: string) {
 }
 
 export async function getMatterWithDetails(matterId: string, organizationId: string) {
-  const userId = await getUserId()
+  const membership = await requireOrganizationMember(organizationId)
+  const resolvedOrganizationId = membership.organizationId
 
   try {
-    // Fetch matter
+    // Fetch matter within the authorized organization. Organization membership,
+    // rather than matter ownership, controls access to shared firm matters.
     const matterData = await db
       .select()
       .from(case_)
       .where(
         and(
           eq(case_.id, matterId),
-          eq(case_.organizationId, organizationId),
-          eq(case_.userId, userId)
+          eq(case_.organizationId, resolvedOrganizationId),
         )
       )
 
@@ -80,7 +82,7 @@ export async function getMatterWithDetails(matterId: string, organizationId: str
       .where(
         and(
           eq(document.caseId, matterId),
-          eq(document.organizationId, organizationId)
+          eq(document.organizationId, resolvedOrganizationId)
         )
       )
       .orderBy(desc(document.createdAt))
@@ -92,7 +94,7 @@ export async function getMatterWithDetails(matterId: string, organizationId: str
       .where(
         and(
           eq(invoice.caseId, matterId),
-          eq(invoice.organizationId, organizationId)
+eq(invoice.organizationId, resolvedOrganizationId)
         )
       )
       .orderBy(desc(invoice.createdAt))
@@ -101,7 +103,7 @@ export async function getMatterWithDetails(matterId: string, organizationId: str
     const payments = await db
       .select()
       .from(payment)
-      .where(eq(payment.organizationId, organizationId))
+      .where(eq(payment.organizationId, resolvedOrganizationId))
 
     // Calculate totals
     const matterPayments = payments.filter(p => invoices.some(inv => inv.id === p.invoiceId))
@@ -141,16 +143,33 @@ export async function createMatter(
     agreedFee?: number
   }
 ) {
-  const userId = await getUserId()
+  const membership = await requireOrganizationMember(organizationId)
+  const userId = membership.userId
+  const resolvedOrganizationId = membership.organizationId
 
   try {
-    const matterId = `case_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const clientRows = await db
+      .select({ id: client.id })
+      .from(client)
+      .where(
+        and(
+          eq(client.id, data.clientId),
+          eq(client.organizationId, resolvedOrganizationId),
+        ),
+      )
+      .limit(1)
+
+    if (!clientRows[0]) {
+      return { success: false, error: 'Selected client was not found in this organization.' }
+    }
+
+    const matterId = `case_${Date.now()}_${nanoid(10)}`
     const matterNumber = `MAT-${Date.now()}`
 
     // Create matter in database using proper Drizzle ORM syntax
     await db.insert(case_).values({
       id: matterId,
-      organizationId,
+      organizationId: resolvedOrganizationId,
       userId,
       clientId: data.clientId,
       title: data.title,
@@ -186,7 +205,7 @@ export async function updateMatterAgreedFee(
   matterId: string,
   agreedFeeCents: number
 ) {
-  const userId = await getUserId()
+  const userId = await getUserId(organizationId)
 
   try {
     const matterRows = await db
@@ -279,7 +298,7 @@ export async function logMatterPayment(
   matterId: string,
   data: { amount: number; paymentMethod: string; referenceNumber?: string; notes?: string }
 ) {
-  const userId = await getUserId()
+  const userId = await getUserId(organizationId)
 
   try {
     const matterRows = await db
@@ -407,7 +426,7 @@ export async function logMatterPayment(
 }
 
 export async function getMatter(matterId: string, organizationId: string) {
-  const userId = await getUserId()
+  const userId = await getUserId(organizationId)
 
   try {
     const matter = await db
@@ -433,7 +452,7 @@ export async function updateMatterStatus(
   organizationId: string,
   status: 'open' | 'on-hold' | 'closed'
 ) {
-  const userId = await getUserId()
+  const userId = await getUserId(organizationId)
 
   try {
     await db
@@ -477,7 +496,7 @@ export async function addCourtAttendance(
     billableHours: number
   }
 ) {
-  const userId = await getUserId()
+  const userId = await getUserId(organizationId)
 
   try {
     const attendanceId = `attendance_${nanoid(12)}`
